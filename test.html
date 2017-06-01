@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas width="500" height="500" id="brush"></canvas>
+<script>
+    const ctx=document.querySelector("#brush").getContext("2d");
+    const clg=ctx.createLinearGradient(0,0,500,500);
+    clg.addColorStop(0,"#cccccc");
+    clg.addColorStop(1,"blue");
+    ctx.strokeStyle=clg;
+    ctx.font="50px Verdana";
+    ctx.strokeText("hello",50,50,100);
+</script>
+</body>
+</html>

@@ -101,6 +101,7 @@
     var version = "3.2.1",
 
         // Define a local copy of jQuery
+        //定义一个函数来构建jquery jquery("xxx") 意味着调用了new jquery.fn.init("xxx")生成一个jquery对象
         jQuery = function (selector, context) {
 
             // The jQuery object is actually just the init constructor 'enhanced'
@@ -120,7 +121,7 @@
         fcamelCase = function (all, letter) {
             return letter.toUpperCase();
         };
-
+    //给jquery.fn指向jquery的原型对象 即我调用原型函数时直接jquery.fn.xxx 而不需要去遍历原型链
     jQuery.fn = jQuery.prototype = {
 
         // The current version of jQuery being used
@@ -134,17 +135,18 @@
         toArray: function () {
             return slice.call(this);
         },
-
         // Get the Nth element in the matched element set OR
         // Get the whole matched element set as a clean array
         get: function (num) {
 
             // Return all the elements in a clean array
+            //如果传入的参数是null或者undefined则返回当前整个jquery数组
             if (num == null) {
                 return slice.call(this);
             }
 
             // Return just the one element from the set
+            //如果参数小于0则返回倒数第num个脚标 否则就返回第num个角标
             return num < 0 ? this[num + this.length] : this[num];
         },
 
@@ -154,9 +156,10 @@
 
             // Build a new jQuery matched element set
             var ret = jQuery.merge(this.constructor(), elems);
-
+            // 把新的元素都装入一个新的jquery数组 返回一个新的juqery数组对象
             // Add the old object onto the stack (as a reference)
             ret.prevObject = this;
+            // 把当前的jquery数组对象保存在新的数组对象的属性中
 
             // Return the newly-formed element set
             return ret;
@@ -164,10 +167,12 @@
 
         // Execute a callback for every element in the matched set.
         each: function (callback) {
+            //调用jquery函数对象中的each函数来遍历当前jquery对象 并执行回调函数
             return jQuery.each(this, callback);
         },
 
         map: function (callback) {
+            //调用jquery函数对象的map函数来执行callback回调函数 并且将map生成的新数组作为一个新的jquery数组对象返回
             return this.pushStack(jQuery.map(this, function (elem, i) {
                 return callback.call(elem, i, elem);
             }));
@@ -176,7 +181,7 @@
         slice: function () {
             return this.pushStack(slice.apply(this, arguments));
         },
-
+        //返回一个新的数组对象
         first: function () {
             return this.eq(0);
         },
@@ -190,18 +195,18 @@
                 j = +i + ( i < 0 ? len : 0 );
             return this.pushStack(j >= 0 && j < len ? [this[j]] : []);
         },
-
+        //根据i来获取第i的角标上的值 作为数组返回
         end: function () {
             return this.prevObject || this.constructor();
         },
-
+        //返回上一个记录的jquery对象 或者一个新的jquery对象
         // For internal use only.
         // Behaves like an Array's method, not like a jQuery method.
         push: push,
         sort: arr.sort,
         splice: arr.splice
     };
-
+    //在原型和函数对象上都创建extend属性函数（其实就是深拷贝函数）
     jQuery.extend = jQuery.fn.extend = function () {
         var options, name, src, copy, copyIsArray, clone,
             target = arguments[0] || {},
@@ -210,57 +215,69 @@
             deep = false;
 
         // Handle a deep copy situation
+        //这个是有三个参数的情况下 第一个参数是否深拷贝 第二个参数是目标对象 第三个参数是拷贝对象
+        //如果第一个参数是true 则给deep赋值true  （要求是布尔值只会是true）
         if (typeof target === "boolean") {
             deep = target;
 
             // Skip the boolean and the target
+            //target等于第二个参数 如果第二个参数没有则为{}
             target = arguments[i] || {};
             i++;
         }
 
         // Handle case when target is a string or something (possible in deep copy)
+        //如果target不是对象 也不是函数 则给target赋值为一个空对象
+        //这种情况是 第一个参数乱写了一些字符串或者其他 则把目标对象设为空
         if (typeof target !== "object" && !jQuery.isFunction(target)) {
             target = {};
         }
 
         // Extend jQuery itself if only one argument is passed
+        //如果只有一个参数 则target=当前jquery对象
+        //这种情况是把目标对象设置为当前对象 把传入的一个参数作为拷贝参数拷贝进来
         if (i === length) {
             target = this;
             i--;
         }
-
+        //如果三种情况都不是 默认是浅拷贝
         for (; i < length; i++) {
 
-            // Only deal with non-null/undefined values
+            // Only deal with not-null/undefined values
             if (( options = arguments[i] ) != null) {
 
                 // Extend the base object
                 for (name in options) {
+                    //获取到第i个参数上的对象
                     src = target[name];
                     copy = options[name];
 
                     // Prevent never-ending loop
+                    //判断当前对象是否已经有该参数对象上的配置  如果有就直接跳过
                     if (target === copy) {
                         continue;
                     }
-
+                    //如果需要深拷贝并且需要copy的配置不为空    并且copy是一个简单对象或者是一个数组
                     // Recurse if we're merging plain objects or arrays
                     if (deep && copy && ( jQuery.isPlainObject(copy) ||
                         ( copyIsArray = Array.isArray(copy) ) )) {
-
+                        //如果copy是数组
                         if (copyIsArray) {
                             copyIsArray = false;
                             clone = src && Array.isArray(src) ? src : [];
-
+                            //判断src是否存在并且是否是一个数组 如果是的话则返回src 否则就返回一个空数组
                         } else {
+                            //如果不是数组
                             clone = src && jQuery.isPlainObject(src) ? src : {};
+                            //判断src是否存在并且是否是一个对象 如果是的话则返回src 否则就返回一个空对象
                         }
-
                         // Never move original objects, clone them
+                        //继续往里拷贝
                         target[name] = jQuery.extend(deep, clone, copy);
 
                         // Don't bring in undefined values
                     } else if (copy !== undefined) {
+                        //如果copy不是一个对象或者数组则直接赋值
                         target[name] = copy;
                     }
                 }
@@ -268,9 +285,10 @@
         }
 
         // Return the modified object
+        //返回已经修改过的对象
         return target;
     };
-
+    //将以下对象拷贝到jquery对象上
     jQuery.extend({
 
         // Unique for each copy of jQuery on the page
@@ -285,15 +303,15 @@
 
         noop: function () {
         },
-
+        //判断对象是否是函数
         isFunction: function (obj) {
             return jQuery.type(obj) === "function";
         },
-
+        //判断该对象是否是window对象
         isWindow: function (obj) {
             return obj != null && obj === obj.window;
         },
-
+        //判断是否为一个有效数值
         isNumeric: function (obj) {
 
             // As of jQuery 3.0, isNumeric is limited to
@@ -307,12 +325,13 @@
                 // subtraction forces infinities to NaN
                 !isNaN(obj - parseFloat(obj));
         },
-
+        //判断是否为一个对象
         isPlainObject: function (obj) {
             var proto, Ctor;
 
             // Detect obvious negatives
             // Use toString instead of jQuery.type to catch host objects
+            //如果为空 或者不是一个对象 则返回false
             if (!obj || toString.call(obj) !== "[object Object]") {
                 return false;
             }
@@ -320,15 +339,18 @@
             proto = getProto(obj);
 
             // Objects with no prototype (e.g., `Object.create( null )`) are plain
+            //如果没有原型
             if (!proto) {
                 return true;
             }
 
             // Objects with prototype are plain iff they were constructed by a global Object function
             Ctor = hasOwn.call(proto, "constructor") && proto.constructor;
+            //获取原型的构造器函数
             return typeof Ctor === "function" && fnToString.call(Ctor) === ObjectFunctionString;
+            //如果构造器是一个函数 并且构造器toString是[object Function] 则返回true;
         },
-
+        //判断是否是一个空对象
         isEmptyObject: function (obj) {
 
             /* eslint-disable no-unused-vars */
@@ -340,7 +362,7 @@
             }
             return true;
         },
-
+        //获取对象的类型
         type: function (obj) {
             if (obj == null) {
                 return obj + "";
@@ -353,6 +375,7 @@
         },
 
         // Evaluates a script in a global context
+        //通过script脚本来执行代码
         globalEval: function (code) {
             DOMEval(code);
         },
@@ -366,14 +389,16 @@
 
         each: function (obj, callback) {
             var length, i = 0;
-
+            //类数组
             if (isArrayLike(obj)) {
                 length = obj.length;
                 for (; i < length; i++) {
+                    //遍历 当回调函数返回false的时候 可以强制跳出遍历
                     if (callback.call(obj[i], i, obj[i]) === false) {
                         break;
                     }
                 }
+                //数组
             } else {
                 for (i in obj) {
                     if (callback.call(obj[i], i, obj[i]) === false) {
@@ -381,7 +406,7 @@
                     }
                 }
             }
-
+            //遍历操作完obj之后 返回该对象
             return obj;
         },
 
@@ -397,25 +422,29 @@
             var ret = results || [];
 
             if (arr != null) {
+                //如果是类数组 则把两个数组合并
                 if (isArrayLike(Object(arr))) {
                     jQuery.merge(ret,
                         typeof arr === "string" ?
                             [arr] : arr
                     );
                 } else {
+                    //如果是数组 则把arr当作参数全部push到ret中
                     push.call(ret, arr);
                 }
             }
-
+        //返回ret
             return ret;
         },
 
         inArray: function (elem, arr, i) {
+            //如果数组非空则调用indexOf判断元素在数组的哪个角标 从i开始查
             return arr == null ? -1 : indexOf.call(arr, elem, i);
         },
 
         // Support: Android <=4.0 only, PhantomJS 1 only
         // push.apply(_, arraylike) throws on ancient WebKit
+        //给第一个数组添加第二个数组中的每一个角标
         merge: function (first, second) {
             var len = +second.length,
                 j = 0,
@@ -7200,11 +7229,11 @@
 
     jQuery.speed = function (speed, easing, fn) {
         var opt = speed && typeof speed === "object" ? jQuery.extend({}, speed) : {
-                complete: fn || !fn && easing ||
-                jQuery.isFunction(speed) && speed,
-                duration: speed,
-                easing: fn && easing || easing && !jQuery.isFunction(easing) && easing
-            };
+            complete: fn || !fn && easing ||
+            jQuery.isFunction(speed) && speed,
+            duration: speed,
+            easing: fn && easing || easing && !jQuery.isFunction(easing) && easing
+        };
 
         // Go to the end state if fx are off
         if (jQuery.fx.off) {
