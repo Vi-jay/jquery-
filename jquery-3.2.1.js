@@ -433,7 +433,7 @@
                     push.call(ret, arr);
                 }
             }
-        //返回ret
+            //返回ret
             return ret;
         },
 
@@ -445,12 +445,16 @@
         // Support: Android <=4.0 only, PhantomJS 1 only
         // push.apply(_, arraylike) throws on ancient WebKit
         //给第一个数组添加第二个数组中的每一个角标
+        /***
+         *遍历第二个数组 然后把第二个数组的每一个角标都添加到第一个函数的末尾  可以用在jquery对象上
+         */
         merge: function (first, second) {
             var len = +second.length,
                 j = 0,
                 i = first.length;
 
             for (; j < len; j++) {
+                //此处把i增加了
                 first[i++] = second[j];
             }
 
@@ -458,26 +462,41 @@
 
             return first;
         },
+        /***
+         *
+         * 这个函数是类似于every some这种 第二个参数是一个回调函数 第三个参数是预期boolean;
+         * 回调函数的结果与预期的参数相反则加入数组中 最后返回
+         */
 
         grep: function (elems, callback, invert) {
             var callbackInverse,
                 matches = [],
                 i = 0,
                 length = elems.length,
+                //预期true则为false
                 callbackExpect = !invert;
 
             // Go through the array, only saving the items
             // that pass the validator function
             for (; i < length; i++) {
+                //获取回调函数返回值的相反值
                 callbackInverse = !callback(elems[i], i);
+                //如果函数返回值的相反值 不等于预期的相反值 则加入新的数组中
                 if (callbackInverse !== callbackExpect) {
+                    //也就是说 回调函数的结果与预期的参数相反则加入数组中 最后返回
                     matches.push(elems[i]);
                 }
             }
 
             return matches;
         },
-
+        /***
+         *
+         * @param elems 数组对象
+         * @param callback 回调函数 三个参数 当前项  角标 传入回调函数的参数
+         * @param arg 传入回调函数的参数
+         * @returns {*} 返回值为回调函数返回的内容 所构成的一个新的数组
+         */
         // arg is for internal usage only
         map: function (elems, callback, arg) {
             var length, value,
@@ -506,7 +525,7 @@
                 }
             }
 
-            // Flatten any nested arrays
+            // Flatten any nested arrays  返回一个新的数组
             return concat.apply([], ret);
         },
 
@@ -520,25 +539,43 @@
 
             if (typeof context === "string") {
                 tmp = fn[context];
+                //context 换成了fn
                 context = fn;
+                //fn 换成了 fn[context]
                 fn = tmp;
             }
 
             // Quick check to determine if target is callable, in the spec
             // this throws a TypeError, but we will just return undefined.
+            //判断fn是否是函数 如果不是则直接结束函数
             if (!jQuery.isFunction(fn)) {
                 return undefined;
             }
 
-            // Simulated bind
+            // Simulated bind  把第三四五...后面的参数放到这个数组中
             args = slice.call(arguments, 2);
             proxy = function () {
+
                 return fn.apply(context || this, args.concat(slice.call(arguments)));
+                //1.第一个参数是对象 第二个参数是函数属性名称 并且是字符串类型 则会 对象的函数 作用在该对象上
+                // 并且参数为传入的第二个参数之后的参数+返回的执行函数的参数
+                //2.第一个参数是函数 第二个参数是对象 如果没有第二个参数 则把该方法作用在全局对象中使用
+                //最后返回这个函数的执行函数
             };
 
             // Set the guid of unique handler to the same of original handler, so it can be removed
-            proxy.guid = fn.guid = fn.guid || jQuery.guid++;
-
+            proxy.guid = fn.guid = fn.guid || jQuery.guid++; //如果fn.guid存在则返回 否则返回jq的guid并且+1
+            //proxy.guid=1 fn.guid=1
+            //就和bind效果是一样的 QAQ
+            /***
+             * $.proxy(function (num, fn, context) {
+                        console.info(num)
+                    }, {a: 1}, 3)(5, 6);
+             function aa(num, fn, context) {
+                        console.info(num)
+                    }
+             aa.bind({a: 1}, 3)(5, 6)
+             */
             return proxy;
         },
 
@@ -565,12 +602,15 @@
         // `in` check used to prevent JIT error (gh-2145)
         // hasOwn isn't used here due to false negatives
         // regarding Nodelist length in IE
+        //obj存在 且有length属性 且 该属性不为0
         var length = !!obj && "length" in obj && obj.length,
+            //获取对象的类型
             type = jQuery.type(obj);
-
+//如果对象是函数 或者是window对象 hack中window可能是Function 则返回false
         if (type === "function" || jQuery.isWindow(obj)) {
             return false;
         }
+//如果是数组  或者length为0 或则length为number 并且大于0 并且不知道
 
         return type === "array" || length === 0 ||
             typeof length === "number" && length > 0 && ( length - 1 ) in obj;
