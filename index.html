@@ -5,12 +5,10 @@
     <title>Title</title>
 </head>
 <body>
-<div></div>
-<div></div>
-<div></div>
+<div v-bind="name"></div>
+<input type="text" v-bind="age.count">
+<div v-bind="age.count"></div>
 <script src="./jquery-3.2.1.js"></script>
-<script>
-console.log($("div").slice(2));
-</script>
+<script src="./test.js"></script>
 </body>
 </html>
